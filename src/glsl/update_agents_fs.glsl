@@ -19,7 +19,7 @@ float rand(in vec2 coordinate) {
                SQ2);
 }
 
-float getDataValue(vec2 uv) { return texture2D(data, fract(uv)).r; }
+// float getDataValue(vec2 uv) { return texture2D(data, fract(uv)).r; }
 
 float getTrailValue(vec2 uv) { return texture2D(data, fract(uv)).g; }
 
@@ -67,6 +67,12 @@ void main() {
   } else if (FL > FR) {
     angle -= RA;
   }
+
+  // Separation: steer to avoid crowding local flockmates
+
+  // Alignment: steer towards the average heading of local flockmates
+
+  // Cohesion: steer to move toward the average position of local flockmates
 
   vec2 offset = vec2(cos(angle), sin(angle)) * SS;
   val.xy += offset;

@@ -1,6 +1,8 @@
 uniform sampler2D agents;
-void main(){
-    vec2 uv = texture2D(agents,uv).xy;
-    gl_Position=vec4(uv*2.0-1.,0.,1.);
-    gl_PointSize = 1.;
+varying float angle;
+void main() {
+  vec3 uva = texture2D(agents, uv).xyz;
+  gl_Position = vec4(uva.xy * 2.0 - 1., 0., 1.);
+  gl_PointSize = 1.0;
+  angle = uva.z;
 }
