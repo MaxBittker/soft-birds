@@ -34,7 +34,7 @@ camera.position.z = 1;
 // 1 init buffers
 //////////////////////////////////////
 
-let size = 512 / 2; // particles amount = ( size ^ 2 )
+let size = 512 / 32; // particles amount = ( size ^ 2 )
 
 let count = size * size;
 console.log(count);
@@ -90,7 +90,11 @@ let update_agents = new ShaderMaterial({
     sa: { value: 1.5 },
     ra: { value: 1.5 },
     so: { value: 0.8 },
-    ss: { value: 0.8 }
+    ss: { value: 0.8 },
+    separation: { value: 15.0 },
+    cohesion: { value: 4.0 },
+    alignment: { value: 1.0 },
+    turbulence: { value: 1.0 }
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
   fragmentShader: require("./src/glsl/update_agents_fs.glsl")
@@ -130,7 +134,7 @@ scene.add(postprocess_mesh);
 // 6 interactive controls
 //////////////////////////////////////
 let controls = new Controls(renderer, agents);
-controls.count = ~~(size * size * 0.05);
+// controls.count = ~~(size * size * 0.05);
 
 // animation loop
 //////////////////////////////////////
@@ -193,8 +197,36 @@ let values = [
     .add(update_agents.uniforms.ra, "value", 1, 90, 0.1)
     .name("rotation angle"),
   gui.add(update_agents.uniforms.so, "value", 1, 25, 0.1).name("sensor offset"),
-  gui.add(controls, "count", 1, size * size, 1)
+  gui
+    .add(update_agents.uniforms.separation, "value", 0, 20, 0.1)
+    .name("separation"),
+  gui
+    .add(update_agents.uniforms.cohesion, "value", 0, 20, 0.1)
+    .name("cohesion"),
+  gui
+    .add(update_agents.uniforms.alignment, "value", 0, 20, 0.1)
+    .name("alignment"),
+  gui
+    .add(update_agents.uniforms.turbulence, "value", 0, 20, 0.1)
+    .name("turbulence")
+
+  // gui.add(controls, "count", 1, size * size, 1)
 ];
 audioAnalyzer({
   done: audioVisualization
 });
+
+registerMidiUpdateListener(
+  (n, v) => {
+    if (!values[n]) {
+      return;
+    }
+    let value = v * values[n].__max;
+    //   console.log(values[n]);
+    values[n].setValue(value);
+  },
+  bv => {
+    console.log(bv);
+    controls.addParticles({ clientX: 500, clientY: 500 });
+  }
+);

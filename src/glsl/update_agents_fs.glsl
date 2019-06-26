@@ -8,6 +8,10 @@ uniform float sa;
 uniform float ra;
 uniform float so;
 uniform float ss;
+uniform float separation;
+uniform float cohesion;
+uniform float alignment;
+uniform float turbulence;
 
 const float PI = 3.14159265358979323846264; // PI
 const float PI2 = PI * 2.;
@@ -27,21 +31,21 @@ float getDesireableness(vec2 location, float resultingAngle) {
   float density = trailAngle.x;
   float angle = trailAngle.y;
 
-  float desireableness = rand(location);
+  float desireableness = rand(location) * turbulence;
   // Separation: steer to avoid crowding local flockmates
-  if (density > 25.8) {
-    desireableness -= density * 1.;
+  if (density > separation) {
+    desireableness -= density * 15.;
   }
   // Cohesion: steer to move toward the average position of local flockmates
-  if (density < 8.8) {
-    desireableness += density * 1.;
+  if (density < cohesion) {
+    desireableness += density * 3.;
   }
 
   // Alignment: steer towards the average heading of local flockmates
   float angleDistance =
       atan(sin(angle - resultingAngle), cos(angle - resultingAngle)) / PI2;
 
-  desireableness += (1.0 - abs(angleDistance)) * 1.5;
+  desireableness -= (1.0 - abs(angleDistance)) * alignment;
 
   return desireableness;
 }
@@ -78,6 +82,7 @@ void main() {
   // float F = getTrailValue(uvF);
   // float FR = getTrailValue(uvFR);
 
+  float C = getDesireableness(val.xy, angle);
   float FL = getDesireableness(uvFL, angle - SA);
   float F = getDesireableness(uvF, angle);
   float FR = getDesireableness(uvFR, angle + SA);
@@ -109,6 +114,10 @@ void main() {
 
   vec2 speed = SS;
   // speed = speed * getTrailValue(val.xy);
+  if (F < C) {
+
+    // speed *= (C - F) / C;
+  }
   vec2 offset = vec2(cos(angle), sin(angle)) * speed;
 
   // if (getTrailValue(val.xy) < 0.3) {
