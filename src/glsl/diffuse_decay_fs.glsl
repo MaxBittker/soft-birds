@@ -32,7 +32,7 @@ void main() {
       vec4 val = texture2D(input_texture, fract(vUv + res * vec2(i, j))).rgba;
       posAcc += val.r * weight + val.g * weight;
 
-      float angleWeight = max(val.g, val.r);
+      float angleWeight = (val.g * 0.5 + val.r);
       weightAcc += angleWeight;
     }
   }
@@ -48,7 +48,8 @@ void main() {
 
       vec2 current = vec2(cos(current_angle), sin(current_angle));
       vec2 heading = vec2(cos(angle), sin(angle));
-      float angleWeight = max(val.g, val.r) / weightAcc;
+
+      float angleWeight = (val.g * 0.5 + val.r) / weightAcc;
 
       aAcc += (current * angleWeight) + (heading * angleWeight);
     }

@@ -19,7 +19,32 @@ float rand(in vec2 coordinate) {
                SQ2);
 }
 
+vec2 getTrailAngleValue(vec2 uv) { return texture2D(data, fract(uv)).ga; }
+
 // float getDataValue(vec2 uv) { return texture2D(data, fract(uv)).r; }
+float getDesireableness(vec2 location, float resultingAngle) {
+  vec2 trailAngle = getTrailAngleValue(location);
+  float density = trailAngle.x;
+  float angle = trailAngle.y;
+
+  float desireableness = rand(location);
+  // Separation: steer to avoid crowding local flockmates
+  if (density > 25.8) {
+    desireableness -= density * 1.;
+  }
+  // Cohesion: steer to move toward the average position of local flockmates
+  if (density < 8.8) {
+    desireableness += density * 1.;
+  }
+
+  // Alignment: steer towards the average heading of local flockmates
+  float angleDistance =
+      atan(sin(angle - resultingAngle), cos(angle - resultingAngle)) / PI2;
+
+  desireableness += (1.0 - abs(angleDistance)) * 1.5;
+
+  return desireableness;
+}
 
 float getTrailValue(vec2 uv) { return texture2D(data, fract(uv)).g; }
 
@@ -49,32 +74,46 @@ void main() {
   vec2 uvFR = val.xy + vec2(cos(angle + SA), sin(angle + SA)) * SO;
 
   // get the values unders the sensors
-  float FL = getTrailValue(uvFL);
-  float F = getTrailValue(uvF);
-  float FR = getTrailValue(uvFR);
+  // float FL = getTrailValue(uvFL);
+  // float F = getTrailValue(uvF);
+  // float FR = getTrailValue(uvFR);
 
-  // original implement not very parallel friendly
+  float FL = getDesireableness(uvFL, angle - SA);
+  float F = getDesireableness(uvF, angle);
+  float FR = getDesireableness(uvFR, angle + SA);
+
   // TODO remove the conditions
+  // try to get closer:
+
   if (F > FL && F > FR) {
+    // do nothing
   } else if (F < FL && F < FR) {
+
     if (rand(val.xy) > .5) {
       angle += RA;
     } else {
       angle -= RA;
     }
+
   } else if (FL < FR) {
     angle += RA;
   } else if (FL > FR) {
     angle -= RA;
   }
 
-  // Separation: steer to avoid crowding local flockmates
+  // Separation: steer to avoid 2crowding local flockmates
 
   // Alignment: steer towards the average heading of local flockmates
 
   // Cohesion: steer to move toward the average position of local flockmates
 
-  vec2 offset = vec2(cos(angle), sin(angle)) * SS;
+  vec2 speed = SS;
+  // speed = speed * getTrailValue(val.xy);
+  vec2 offset = vec2(cos(angle), sin(angle)) * speed;
+
+  // if (getTrailValue(val.xy) < 0.3) {
+  // offset = vec2(0.);
+  // }
   val.xy += offset;
 
   //   condition from the paper

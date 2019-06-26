@@ -34,9 +34,10 @@ camera.position.z = 1;
 // 1 init buffers
 //////////////////////////////////////
 
-let size = 512 / 8; // particles amount = ( size ^ 2 )
+let size = 512 / 2; // particles amount = ( size ^ 2 )
 
 let count = size * size;
+console.log(count);
 let pos = new Float32Array(count * 3);
 let uvs = new Float32Array(count * 2);
 let ptexdata = new Float32Array(count * 4);
@@ -72,7 +73,7 @@ for (let i = 0; i < count; i++) {
 let diffuse_decay = new ShaderMaterial({
   uniforms: {
     points: { value: null },
-    decay: { value: 0.99 }
+    decay: { value: 0.98 }
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
   fragmentShader: require("./src/glsl/diffuse_decay_fs.glsl")
@@ -86,10 +87,10 @@ let trails = new PingpongRenderTarget(w, h, diffuse_decay);
 let update_agents = new ShaderMaterial({
   uniforms: {
     data: { value: null },
-    sa: { value: 2 },
-    ra: { value: 0 },
-    so: { value: 12 },
-    ss: { value: 1.1 }
+    sa: { value: 1.5 },
+    ra: { value: 1.5 },
+    so: { value: 0.8 },
+    ss: { value: 0.8 }
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
   fragmentShader: require("./src/glsl/update_agents_fs.glsl")
@@ -155,6 +156,9 @@ let audioVisualization = audio => {
   function raf() {
     requestAnimationFrame(raf);
     time = (Date.now() - start) * 0.001;
+
+    trails.material.uniforms.points.value = render.texture;
+    trails.render(renderer, time);
 
     trails.material.uniforms.points.value = render.texture;
     trails.render(renderer, time);
