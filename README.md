@@ -1,7 +1,8 @@
 # soft boids
 
-"softened" boids algrorithm that can run on a GPU.
 ![gif](img/output2.gif)
+
+"softened" boids algrorithm that can run on a GPU.
 
 > ### [Stigmergy](https://en.wikipedia.org/wiki/Stigmergy)
 >
