@@ -8,6 +8,12 @@ uniform float sa;
 uniform float ra;
 uniform float so;
 uniform float ss;
+
+uniform float sub;
+uniform float low;
+uniform float med;
+uniform float high;
+
 uniform float separation;
 uniform float cohesion;
 uniform float alignment;
@@ -32,13 +38,18 @@ float getDesireableness(vec2 location, float resultingAngle) {
   float angle = trailAngle.y;
 
   float desireableness = rand(location) * turbulence;
+
+  // Centralness:
+  // if (length(location - vec2(0.5)) > 0.3) {
+  desireableness -= length(location - vec2(0.5)) * 20.;
+  // }
   // Separation: steer to avoid crowding local flockmates
   if (density > separation) {
     desireableness -= density * 15.;
   }
   // Cohesion: steer to move toward the average position of local flockmates
   if (density < cohesion) {
-    desireableness += density * 3.;
+    desireableness += density * 10.;
   }
 
   // Alignment: steer towards the average heading of local flockmates
@@ -82,7 +93,8 @@ void main() {
   // float F = getTrailValue(uvF);
   // float FR = getTrailValue(uvFR);
 
-  float C = getDesireableness(val.xy, angle);
+  float B =
+      getDesireableness(val.xy + vec2(cos(angle), sin(angle)) * -SO, angle);
   float FL = getDesireableness(uvFL, angle - SA);
   float F = getDesireableness(uvF, angle);
   float FR = getDesireableness(uvFR, angle + SA);
@@ -112,11 +124,22 @@ void main() {
 
   // Cohesion: steer to move toward the average position of local flockmates
 
-  vec2 speed = SS;
-  // speed = speed * getTrailValue(val.xy);
-  if (F < C) {
+  vec2 speed = res;
+  int bin = int(mod((vUv.x * 1000.), 4.));
 
-    // speed *= (C - F) / C;
+  if (bin == 0) {
+    speed *= sub;
+  } else if (bin == 1) {
+    speed *= low;
+  } else if (bin == 2) {
+    speed *= med;
+
+  } else if (bin == 3) {
+    speed *= high;
+  }
+  // speed = speed * getTrailValue(val.xy);
+  if (F < B) {
+    speed *= 0.8;
   }
   vec2 offset = vec2(cos(angle), sin(angle)) * speed;
 

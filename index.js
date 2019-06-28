@@ -91,6 +91,12 @@ let update_agents = new ShaderMaterial({
     ra: { value: 1.5 },
     so: { value: 0.8 },
     ss: { value: 0.8 },
+
+    sub: { value: 0.8 },
+    low: { value: 0.8 },
+    med: { value: 0.8 },
+    high: { value: 0.8 },
+
     separation: { value: 15.0 },
     cohesion: { value: 4.0 },
     alignment: { value: 1.0 },
@@ -123,6 +129,8 @@ let postprocess = new ShaderMaterial({
     agent_render: {
       value: null
     }
+    // separation: { value: 15.0 },
+    // cohesion: { value: 4.0 }
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
   fragmentShader: require("./src/glsl/postprocess_fs.glsl")
@@ -153,6 +161,7 @@ let time = 0;
 
 import { registerMidiUpdateListener, getMidiValue } from "./src/Midi";
 import { audioAnalyzer } from "./src/Audio";
+let audioBuffer = null;
 
 let audioVisualization = audio => {
   console.log(audio);
@@ -161,11 +170,46 @@ let audioVisualization = audio => {
     requestAnimationFrame(raf);
     time = (Date.now() - start) * 0.001;
 
-    trails.material.uniforms.points.value = render.texture;
-    trails.render(renderer, time);
+    if (!audioBuffer) {
+      audioBuffer = new Uint8Array(audio.frequencyBinCount);
+    }
+    audio.getByteFrequencyData(audioBuffer);
+    let bands = new Array(4);
+    var f = 0.0;
+    var a = 5,
+      b = 11,
+      c = 24,
+      d = 512,
+      i = 0;
+    for (; i < a; i++) f += audioBuffer[i];
+    f *= 0.2; // 1/(a-0)
+    f *= 0.003921569; // 1/255
+    bands[0] = f;
+    f = 0.0;
+    for (; i < b; i++) f += audioBuffer[i];
+    f *= 0.166666667; // 1/(b-a)
+    f *= 0.003921569; // 1/255
+    bands[1] = f;
+    f = 0.0;
+    for (; i < c; i++) f += audioBuffer[i];
+    f *= 0.076923077; // 1/(c-b)
+    f *= 0.003921569; // 1/255
+    bands[2] = f;
+    f = 0.0;
+    for (; i < d; i++) f += audioBuffer[i];
+    f *= 0.00204918; // 1/(d-c)
+    f *= 0.003921569; // 1/255
+    bands[3] = f;
+    bands.forEach((v, i) => levels[i].setValue(v * 2));
+    // let v = bands[3] * 2;
+    // v = v * getMidiValue(5) + (getMidiValue(6) - 0.5);
 
-    trails.material.uniforms.points.value = render.texture;
-    trails.render(renderer, time);
+    // ss.setValue(v * 2);
+
+    for (var i = 0; i < 10; i++) {
+      trails.material.uniforms.points.value = render.texture;
+      trails.render(renderer, time);
+    }
 
     agents.material.uniforms.data.value = trails.texture;
     agents.render(renderer, time);
@@ -184,9 +228,15 @@ let audioVisualization = audio => {
 
 let gui = new dat.GUI();
 
-let ss = gui
-  .add(update_agents.uniforms.ss, "value", -4, 9, 0.1)
-  .name("agent speed");
+let ss = gui.add(update_agents.uniforms.ss, "value", -4, 9, 0.1).name("speed");
+
+console.log(update_agents.uniforms);
+let levels = [
+  gui.add(update_agents.uniforms.sub, "value", -1, 5, 0.1).name("sub"),
+  gui.add(update_agents.uniforms.low, "value", -1, 5, 0.1).name("low"),
+  gui.add(update_agents.uniforms.med, "value", -1, 5, 0.1).name("med"),
+  gui.add(update_agents.uniforms.high, "value", -1, 5, 0.1).name("high")
+];
 
 let values = [
   gui
