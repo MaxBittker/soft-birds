@@ -49,9 +49,9 @@ void main() {
   // density
   // gl_FragColor = vec4(src.ggg * 1., 1.0);
   // } else if (vUv.y < 0.1) {
-  rainbow = hsv2rgb(vec3(
-      src.a * 1.5, 0.1 + agent_src.r * 0.5 + clamp(density, 0., 10.) * 0.05,
-      clamp(density, 0., 10.) * 0.1 + agent_src.r * 0.9));
+  rainbow = hsv2rgb(
+      vec3(src.a, 0.1 + agent_src.r * 0.5 + clamp(density, 0., 10.) * 0.05,
+           clamp(density, 0., 10.) * 0.1 + agent_src.r * 0.9));
   // vec3 c = vec3(rainbow);
 
   if (density > separation) {

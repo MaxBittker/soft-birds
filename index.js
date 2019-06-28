@@ -162,7 +162,6 @@ let time = 0;
 import { registerMidiUpdateListener, getMidiValue } from "./src/Midi";
 import { audioAnalyzer } from "./src/Audio";
 let audioBuffer = null;
-
 let audioVisualization = audio => {
   console.log(audio);
 
@@ -267,7 +266,6 @@ let values = [
 
   // gui.add(controls, "count", 1, size * size, 1)
 ];
-console.log(values[0]);
 values.forEach(v => v.setValue(v.object.value));
 
 audioAnalyzer({
