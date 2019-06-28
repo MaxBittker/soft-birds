@@ -1,6 +1,7 @@
 # soft boids
 
 "softened" boids algrorithm that can run on a GPU.
+![gif](img/output2.gif)
 
 > ### [Stigmergy](https://en.wikipedia.org/wiki/Stigmergy)
 >
@@ -25,4 +26,3 @@ then build with
 sample images:
 
 ![img0](img/1.png)
-![gif](img/output2.gif)
