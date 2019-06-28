@@ -13,8 +13,6 @@ const float RAD = 1. / PI;
 void main() {
 
   vec2 res = 1. / resolution;
-  float pos = texture2D(points, vUv).r;
-  float posA = texture2D(points, vUv).g;
 
   float posAcc = 0.;
 
@@ -43,21 +41,30 @@ void main() {
     for (float j = -dim; j <= dim; j++) {
       vec4 val = texture2D(input_texture, fract(vUv + res * vec2(i, j))).rgba;
 
-      float current_angle = val.b * PI2;
-      float angle = (val.a) * PI2;
+      float agent_angle = val.b * PI2;
+      float angle = (val.a - 0.5) * PI2;
 
-      vec2 current = vec2(cos(current_angle), sin(current_angle));
+      vec2 current = vec2(cos(agent_angle), sin(agent_angle)) * val.r;
       vec2 heading = vec2(cos(angle), sin(angle));
 
-      float angleWeight = (val.g * 0.5 + val.r) / weightAcc;
+      float angleWeight = (val.g + val.r) / weightAcc;
 
       aAcc += (current * angleWeight) + (heading * angleWeight);
+      // aAcc += (current * weight) + (heading * weight);
     }
   }
+  // try to conver the angle back to [0-1]??
+  // float accumulatedAngle = mod(((atan(aAcc.y, aAcc.x) / PI2) + 1.0), 1.0);
+  float accumulatedAngle = atan(aAcc.y, aAcc.x) / PI2 + 0.5;
 
-  float accumulatedAngle = (atan(aAcc.y, aAcc.x) / PI2) * 2.0;
+  // if (accumulatedAngle < 0.) {
+  // accumulatedAngle = 1.0 + accumulatedAngle;
+  // }
 
-  vec4 final = vec4(pos * decay, posAcc * decay, posA, accumulatedAngle);
+  float agentDensity = texture2D(points, vUv).r;
+  float agentAngle = texture2D(points, vUv).g;
+
+  vec4 final = vec4(agentDensity, posAcc * decay, agentAngle, accumulatedAngle);
   gl_FragColor = final;
   // gl_FragColor = clamp(final, 0.0, 1.);
 }

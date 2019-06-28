@@ -34,7 +34,7 @@ camera.position.z = 1;
 // 1 init buffers
 //////////////////////////////////////
 
-let size = 512 / 32; // particles amount = ( size ^ 2 )
+let size = 512 / 2 ** 2; // particles amount = ( size ^ 2 )
 
 let count = size * size;
 console.log(count);
@@ -128,9 +128,9 @@ let postprocess = new ShaderMaterial({
     },
     agent_render: {
       value: null
-    }
-    // separation: { value: 15.0 },
-    // cohesion: { value: 4.0 }
+    },
+    separation: { value: 15.0 },
+    cohesion: { value: 4.0 }
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
   fragmentShader: require("./src/glsl/postprocess_fs.glsl")
@@ -206,7 +206,7 @@ let audioVisualization = audio => {
 
     // ss.setValue(v * 2);
 
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 6; i++) {
       trails.material.uniforms.points.value = render.texture;
       trails.render(renderer, time);
     }
@@ -220,6 +220,11 @@ let audioVisualization = audio => {
     postprocess_mesh.material.uniforms.agent_render.value = render.texture;
 
     renderer.setSize(w, h);
+    // debugger;
+    postprocess_mesh.material.uniforms.separation.value =
+      agents.material.uniforms.separation.value;
+    postprocess_mesh.material.uniforms.cohesion.value =
+      agents.material.uniforms.cohesion.value;
     renderer.clear();
     renderer.render(scene, camera);
   }
@@ -240,28 +245,29 @@ let levels = [
 
 let values = [
   gui
-    .add(diffuse_decay.uniforms.decay, "value", 0.01, 0.999, 0.01)
+    .add(diffuse_decay.uniforms.decay, "value", 0.8, 0.999, 0.01)
     .name("decay"),
-  gui.add(update_agents.uniforms.sa, "value", 1, 90, 0.1).name("sensor angle"),
+  gui.add(update_agents.uniforms.sa, "value", 1, 10, 0.1).name("sensor angle"),
   gui
-    .add(update_agents.uniforms.ra, "value", 1, 90, 0.1)
+    .add(update_agents.uniforms.ra, "value", 1, 10, 0.1)
     .name("rotation angle"),
-  gui.add(update_agents.uniforms.so, "value", 1, 25, 0.1).name("sensor offset"),
+  gui.add(update_agents.uniforms.so, "value", 1, 5, 0.1).name("sensor offset"),
   gui
-    .add(update_agents.uniforms.separation, "value", 0, 20, 0.1)
+    .add(update_agents.uniforms.separation, "value", 0, 5, 0.1)
     .name("separation"),
+  gui.add(update_agents.uniforms.cohesion, "value", 0, 5, 0.1).name("cohesion"),
   gui
-    .add(update_agents.uniforms.cohesion, "value", 0, 20, 0.1)
-    .name("cohesion"),
-  gui
-    .add(update_agents.uniforms.alignment, "value", 0, 20, 0.1)
+    .add(update_agents.uniforms.alignment, "value", 0, 5, 0.1)
     .name("alignment"),
   gui
-    .add(update_agents.uniforms.turbulence, "value", 0, 20, 0.1)
+    .add(update_agents.uniforms.turbulence, "value", 0, 4, 0.1)
     .name("turbulence")
 
   // gui.add(controls, "count", 1, size * size, 1)
 ];
+console.log(values[0]);
+values.forEach(v => v.setValue(v.object.value));
+
 audioAnalyzer({
   done: audioVisualization
 });

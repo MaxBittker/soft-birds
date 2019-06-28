@@ -21,6 +21,11 @@ module.exports = {
       {
         test: /\.glsl$/,
         use: "raw-loader"
+      },
+      {
+        test: /\.(glsl|frag|vert)$/,
+        use: "glslify-loader",
+        exclude: /node_modules/
       }
     ]
   },

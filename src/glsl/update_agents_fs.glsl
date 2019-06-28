@@ -19,15 +19,22 @@ uniform float cohesion;
 uniform float alignment;
 uniform float turbulence;
 
+// clang-format off
+#pragma glslify: snoise3 = require(glsl-noise/simplex/3d)
+// #pragma glslify: snoise2 = require(glsl-noise/simplex/2d)
+#pragma glslify: random = require(glsl-random)
+
+// clang-format on
+
 const float PI = 3.14159265358979323846264; // PI
 const float PI2 = PI * 2.;
 const float RAD = 1. / PI;
 const float PHI = 1.61803398874989484820459 * .1;    // Golden Ratio
 const float SQ2 = 1.41421356237309504880169 * 1000.; // Square Root of Two
-float rand(in vec2 coordinate) {
-  return fract(tan(distance(coordinate * (time + PHI), vec2(PHI, PI * .1))) *
-               SQ2);
-}
+// float rand(in vec2 coordinate) {
+//   return fract(tan(distance(coordinate * (time + PHI), vec2(PHI, PI * .1))) *
+//                SQ2);
+// }
 
 vec2 getTrailAngleValue(vec2 uv) { return texture2D(data, fract(uv)).ga; }
 
@@ -35,13 +42,15 @@ vec2 getTrailAngleValue(vec2 uv) { return texture2D(data, fract(uv)).ga; }
 float getDesireableness(vec2 location, float resultingAngle) {
   vec2 trailAngle = getTrailAngleValue(location);
   float density = trailAngle.x;
-  float angle = trailAngle.y;
+  float angle = trailAngle.y * PI2;
 
-  float desireableness = rand(location) * turbulence;
+  float desireableness = 0.;
 
   // Centralness:
   // if (length(location - vec2(0.5)) > 0.3) {
-  desireableness -= length(location - vec2(0.5)) * 20.;
+  // desireableness -= length(location - vec2(0.5)) * 20.;
+  desireableness += snoise3(vec3(location * 1.5, time * .1)) * 15.;
+  // desireableness += location.x * 400.;
   // }
   // Separation: steer to avoid crowding local flockmates
   if (density > separation) {
@@ -106,7 +115,7 @@ void main() {
     // do nothing
   } else if (F < FL && F < FR) {
 
-    if (rand(val.xy) > .5) {
+    if (random(val.xy) > .5) {
       angle += RA;
     } else {
       angle -= RA;
@@ -139,7 +148,7 @@ void main() {
   }
   // speed = speed * getTrailValue(val.xy);
   if (F < B) {
-    speed *= 0.8;
+    speed *= 0.9;
   }
   vec2 offset = vec2(cos(angle), sin(angle)) * speed;
 
@@ -152,7 +161,7 @@ void main() {
   //   : move only if the destination is free
   //   if (getDataValue(val.xy) == 1.) {
   //     val.xy = src.xy;
-  //     angle = rand(val.xy + time) * PI2;
+  //     angle = random(val.xy + time) * PI2;
   //   }
 
   // warps the coordinates so they remains in the [0-1] interval
@@ -160,6 +169,7 @@ void main() {
 
   // converts the angle back to [0-1]
   val.z = (angle / PI2);
+  // val.z = turbulence;
 
   gl_FragColor = val;
 }
