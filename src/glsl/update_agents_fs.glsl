@@ -49,7 +49,7 @@ float getDesireableness(vec2 location, float resultingAngle) {
   // Centralness:
   // if (length(location - vec2(0.5)) > 0.3) {
   // desireableness -= length(location - vec2(0.5)) * 20.;
-  desireableness += snoise3(vec3(location * 1.5, time * .1)) * 15.;
+  desireableness += snoise3(vec3(location, time * .1)) * turbulence;
   // desireableness += location.x * 400.;
   // }
   // Separation: steer to avoid crowding local flockmates

@@ -233,34 +233,36 @@ let audioVisualization = audio => {
 
 let gui = new dat.GUI();
 
-let ss = gui.add(update_agents.uniforms.ss, "value", -4, 9, 0.1).name("speed");
+let ss = gui.add(update_agents.uniforms.ss, "value", -4, 9, 0.01).name("speed");
 
 console.log(update_agents.uniforms);
 let levels = [
-  gui.add(update_agents.uniforms.sub, "value", -1, 5, 0.1).name("sub"),
-  gui.add(update_agents.uniforms.low, "value", -1, 5, 0.1).name("low"),
-  gui.add(update_agents.uniforms.med, "value", -1, 5, 0.1).name("med"),
-  gui.add(update_agents.uniforms.high, "value", -1, 5, 0.1).name("high")
+  gui.add(update_agents.uniforms.sub, "value", -1, 5, 0.01).name("sub"),
+  gui.add(update_agents.uniforms.low, "value", -1, 5, 0.01).name("low"),
+  gui.add(update_agents.uniforms.med, "value", -1, 5, 0.01).name("med"),
+  gui.add(update_agents.uniforms.high, "value", -1, 5, 0.01).name("high")
 ];
 
 let values = [
   gui
     .add(diffuse_decay.uniforms.decay, "value", 0.8, 0.999, 0.01)
     .name("decay"),
-  gui.add(update_agents.uniforms.sa, "value", 1, 10, 0.1).name("sensor angle"),
+  gui.add(update_agents.uniforms.sa, "value", 1, 10, 0.01).name("sensor angle"),
   gui
-    .add(update_agents.uniforms.ra, "value", 1, 10, 0.1)
+    .add(update_agents.uniforms.ra, "value", 1, 10, 0.01)
     .name("rotation angle"),
-  gui.add(update_agents.uniforms.so, "value", 1, 5, 0.1).name("sensor offset"),
+  gui.add(update_agents.uniforms.so, "value", 1, 5, 0.01).name("sensor offset"),
   gui
-    .add(update_agents.uniforms.separation, "value", 0, 5, 0.1)
+    .add(update_agents.uniforms.separation, "value", 0, 5, 0.01)
     .name("separation"),
-  gui.add(update_agents.uniforms.cohesion, "value", 0, 5, 0.1).name("cohesion"),
   gui
-    .add(update_agents.uniforms.alignment, "value", 0, 5, 0.1)
+    .add(update_agents.uniforms.cohesion, "value", 0, 5, 0.01)
+    .name("cohesion"),
+  gui
+    .add(update_agents.uniforms.alignment, "value", 0, 5, 0.01)
     .name("alignment"),
   gui
-    .add(update_agents.uniforms.turbulence, "value", 0, 4, 0.1)
+    .add(update_agents.uniforms.turbulence, "value", 0, 4, 0.01)
     .name("turbulence")
 
   // gui.add(controls, "count", 1, size * size, 1)
