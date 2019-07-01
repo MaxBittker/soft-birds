@@ -49,6 +49,10 @@ float getDesireableness(vec2 location, float resultingAngle) {
   // Centralness:
   // if (length(location - vec2(0.5)) > 0.3) {
   // desireableness -= length(location - vec2(0.5)) * 20.;
+  // vec2 square = abs(location - vec2(0.5)); // Similar to ( Y greater than 0.1
+  // ) desireableness -= step(0.4, max(square.x, square.y)) * length(location -
+  // vec2(0.5)) * 5.;
+
   desireableness += snoise3(vec3(location, time * .1)) * turbulence;
   // desireableness += location.x * 400.;
   // }
@@ -133,22 +137,22 @@ void main() {
 
   // Cohesion: steer to move toward the average position of local flockmates
 
-  vec2 speed = res;
+  vec2 speed = SS;
   int bin = int(mod((vUv.x * 1000.), 4.));
 
-  if (bin == 0) {
-    speed *= sub;
-  } else if (bin == 1) {
-    speed *= low;
-  } else if (bin == 2) {
-    speed *= med;
-
-  } else if (bin == 3) {
-    speed *= high;
-  }
   // speed = speed * getTrailValue(val.xy);
   if (F < B) {
-    speed *= 0.9;
+    speed *= 0.6;
+    if (bin == 0) {
+      speed *= sub;
+    } else if (bin == 1) {
+      speed *= low;
+    } else if (bin == 2) {
+      speed *= med;
+
+    } else if (bin == 3) {
+      speed *= high;
+    }
   }
   vec2 offset = vec2(cos(angle), sin(angle)) * speed;
 

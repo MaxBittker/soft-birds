@@ -18,9 +18,9 @@ import Controls from "./src/Controls";
 
 // 0 configure scene
 //////////////////////////////////////
-
-let w = window.innerWidth;
-let h = window.innerHeight;
+let r = 1;
+let w = window.innerWidth / r;
+let h = window.innerHeight / r;
 
 const renderer = new WebGLRenderer({
   alpha: true
@@ -34,7 +34,7 @@ camera.position.z = 1;
 // 1 init buffers
 //////////////////////////////////////
 
-let size = 512 / 2 ** 2; // particles amount = ( size ^ 2 )
+let size = 512 / 2; // particles amount = ( size ^ 2 )
 
 let count = size * size;
 console.log(count);
@@ -129,6 +129,9 @@ let postprocess = new ShaderMaterial({
     agent_render: {
       value: null
     },
+    agent_data: {
+      value: null
+    },
     separation: { value: 15.0 },
     cohesion: { value: 4.0 }
   },
@@ -199,13 +202,13 @@ let audioVisualization = audio => {
     f *= 0.00204918; // 1/(d-c)
     f *= 0.003921569; // 1/255
     bands[3] = f;
-    bands.forEach((v, i) => levels[i].setValue(v * 2));
+    bands.forEach((v, i) => levels[i].setValue(0.1 + v * 2));
     // let v = bands[3] * 2;
     // v = v * getMidiValue(5) + (getMidiValue(6) - 0.5);
 
     // ss.setValue(v * 2);
 
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < 8; i++) {
       trails.material.uniforms.points.value = render.texture;
       trails.render(renderer, time);
     }
@@ -217,13 +220,15 @@ let audioVisualization = audio => {
 
     postprocess_mesh.material.uniforms.data.value = trails.texture;
     postprocess_mesh.material.uniforms.agent_render.value = render.texture;
+    postprocess_mesh.material.uniforms.agent_data.value = agents.texture;
 
-    renderer.setSize(w, h);
-    // debugger;
+    renderer.setSize(w * r, h * r);
+
     postprocess_mesh.material.uniforms.separation.value =
       agents.material.uniforms.separation.value;
     postprocess_mesh.material.uniforms.cohesion.value =
       agents.material.uniforms.cohesion.value;
+
     renderer.clear();
     renderer.render(scene, camera);
   }
@@ -252,16 +257,16 @@ let values = [
     .name("rotation angle"),
   gui.add(update_agents.uniforms.so, "value", 1, 5, 0.01).name("sensor offset"),
   gui
-    .add(update_agents.uniforms.separation, "value", 0, 5, 0.01)
+    .add(update_agents.uniforms.separation, "value", 0, 10, 0.01)
     .name("separation"),
   gui
-    .add(update_agents.uniforms.cohesion, "value", 0, 5, 0.01)
+    .add(update_agents.uniforms.cohesion, "value", 0, 10, 0.01)
     .name("cohesion"),
   gui
-    .add(update_agents.uniforms.alignment, "value", 0, 5, 0.01)
+    .add(update_agents.uniforms.alignment, "value", 0, 10, 0.01)
     .name("alignment"),
   gui
-    .add(update_agents.uniforms.turbulence, "value", 0, 4, 0.01)
+    .add(update_agents.uniforms.turbulence, "value", 0, 10, 0.01)
     .name("turbulence")
 
   // gui.add(controls, "count", 1, size * size, 1)

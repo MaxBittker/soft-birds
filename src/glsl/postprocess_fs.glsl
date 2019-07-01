@@ -1,6 +1,7 @@
 
 uniform sampler2D data;
 uniform sampler2D agent_render;
+uniform sampler2D agent_data;
 
 uniform float separation;
 uniform float cohesion;
@@ -26,17 +27,28 @@ float debug = 0.8;
 // }
 
 void main() {
+  vec2 pos = vUv / 1.;
+  // vec4 protag = texture2D(data, vec2(1. / 50.));
+  // pos += (protag.xy);
 
-  vec4 src = texture2D(data, vUv);
+  if (pos.x < 0.3 && pos.y > 0.6) {
+    // pos.x -= (protag.x);
+    // pos.y += protag.y / 100.;
+    pos /= 4.;
+    // pos.x += protag.x / 2.0;
+  }
+  pos = mod(pos, 1.0);
+  vec4 src = texture2D(data, pos);
+
   float density = src.g;
   // float angle = src.a * PI2;
   // vec2 heading = vec2(cos(angle), sin(angle));
 
   // angle with trail density
 
-  // if (vUv.x > 0.9 * debug) {
+  // if (pos.x > 0.9 * debug) {
 
-  vec4 agent_src = texture2D(agent_render, vUv);
+  vec4 agent_src = texture2D(agent_render, pos);
   vec3 rainbow;
 
   // // plain render
@@ -45,14 +57,14 @@ void main() {
   // gl_FragColor = vec4(rainbow, 1.0);
 
   // } else
-  // if (vUv.y > 0.9 * debug) {
+  // if (pos.y > 0.9 * debug) {
   // density
   // gl_FragColor = vec4(src.ggg * 1., 1.0);
-  // } else if (vUv.y < 0.1) {
-  rainbow = hsv2rgb(
-      vec3(src.a, 0.1 + agent_src.r * 0.5 + clamp(density, 0., 10.) * 0.05,
-           clamp(density, 0., 10.) * 0.1 + agent_src.r * 0.9));
+  // } else if (pos.y < 0.1) {
+  rainbow = hsv2rgb(vec3(src.a, 0.5 + agent_src.r * 0.2 + density * 0.01,
+                         clamp(density, 0., 5.) * 0.08 + agent_src.r * 0.9));
   // vec3 c = vec3(rainbow);
+  // rainbow = hsv2rgb(vUv.x * 255., 255.0, 50.);
 
   if (density > separation) {
     // rainbow += vec3(0.05, 0., 0.);
@@ -61,10 +73,14 @@ void main() {
     // rainbow +=
     // vec3(0.0, 0.1, 0.) * clamp(1. - (cohesion - density) * 5., 0.1, 1.);
   }
-  if (vUv.x < 0.2) {
-    rainbow = hsv2rgb(vec3(src.a, 0.4, 0.4 + agent_src.r));
+  if (vUv.x < 0.2 && vUv.y < 0.6) {
+    rainbow = hsv2rgb(vec3(src.a, 0.1, 0.4 + agent_src.r));
   }
   gl_FragColor = vec4(rainbow, 1.0);
+
+  // vec2 square = abs(vUv - vec2(0.5)); // Similar to ( Y greater than 0.1 )
+  // vec3 color = vec3(1.0) * step(0.4, max(square.x, square.y));
+  // gl_FragColor = vec4(color, 1.0);
 
   // gl_FragColor = vec4(c * src.g * 4., 1.);
 
