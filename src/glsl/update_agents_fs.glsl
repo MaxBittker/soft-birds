@@ -53,7 +53,9 @@ float getDesireableness(vec2 location, float resultingAngle) {
   // ) desireableness -= step(0.4, max(square.x, square.y)) * length(location -
   // vec2(0.5)) * 5.;
 
-  desireableness += snoise3(vec3(location, time * .1)) * turbulence;
+  desireableness += snoise3(vec3(location, time * .1));
+  // /
+  // * turbulence;
   // desireableness += location.x * 400.;
   // }
   // Separation: steer to avoid crowding local flockmates
@@ -78,6 +80,7 @@ float getTrailValue(vec2 uv) { return texture2D(data, fract(uv)).g; }
 
 varying vec2 vUv;
 void main() {
+  float species = floor((vUv.x + 0.01) * 10.0) / 10.0;
 
   // converts degree to radians (should be done on the CPU)
   float SA = sa * RAD;
@@ -85,7 +88,8 @@ void main() {
 
   // downscales the parameters (should be done on the CPU)
   vec2 res = 1. / resolution; // data trail scale
-  vec2 SO = so * res;
+  vec2 SO = (so + species) * res;
+  // SO += species;
   vec2 SS = ss * res;
 
   // uv = input_texture.xy
@@ -138,11 +142,13 @@ void main() {
   // Cohesion: steer to move toward the average position of local flockmates
 
   vec2 speed = SS;
-  int bin = int(mod((vUv.x * 1000.), 4.));
+
+  speed += species / 400.;
+  int bin = int(species);
 
   // speed = speed * getTrailValue(val.xy);
   if (F < B) {
-    speed *= 0.6;
+    speed *= turbulence;
     if (bin == 0) {
       speed *= sub;
     } else if (bin == 1) {

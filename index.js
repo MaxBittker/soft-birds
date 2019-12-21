@@ -34,7 +34,7 @@ camera.position.z = 1;
 // 1 init buffers
 //////////////////////////////////////
 
-let size = 512 / 2; // particles amount = ( size ^ 2 )
+let size = 512 / 4; // particles amount = ( size ^ 2 )
 
 let count = size * size;
 console.log(count);
@@ -87,20 +87,20 @@ let trails = new PingpongRenderTarget(w, h, diffuse_decay);
 let update_agents = new ShaderMaterial({
   uniforms: {
     data: { value: null },
-    sa: { value: 1.5 },
-    ra: { value: 1.5 },
-    so: { value: 0.8 },
-    ss: { value: 0.8 },
+    sa: { value: 1.0 },
+    ra: { value: 1.0 },
+    so: { value: 2.99 },
+    ss: { value: 0.25 },
 
     sub: { value: 0.8 },
     low: { value: 0.8 },
     med: { value: 0.8 },
     high: { value: 0.8 },
 
-    separation: { value: 15.0 },
-    cohesion: { value: 4.0 },
-    alignment: { value: 1.0 },
-    turbulence: { value: 1.0 }
+    separation: { value: 9.75 },
+    cohesion: { value: 2.19 },
+    alignment: { value: 9.72 },
+    turbulence: { value: 0.54 }
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
   fragmentShader: require("./src/glsl/update_agents_fs.glsl")

@@ -31,10 +31,11 @@ void main() {
   // vec4 protag = texture2D(data, vec2(1. / 50.));
   // pos += (protag.xy);
 
-  if (pos.x < 0.3 && pos.y > 0.6) {
+  if (pos.x < 0.35 && pos.y > 1.0 - 0.35) {
     // pos.x -= (protag.x);
-    // pos.y += protag.y / 100.;
-    pos /= 4.;
+    // pos.y += protag.y / 2.;
+    // pos.y += protag.y / 2.;
+    // pos /= 4.;
     // pos.x += protag.x / 2.0;
   }
   pos = mod(pos, 1.0);
@@ -63,6 +64,13 @@ void main() {
   // } else if (pos.y < 0.1) {
   rainbow = hsv2rgb(vec3(src.a, 0.5 + agent_src.r * 0.2 + density * 0.01,
                          clamp(density, 0., 5.) * 0.08 + agent_src.r * 0.9));
+  if (density > 0.9) {
+
+    rainbow =
+        hsv2rgb(vec3(agent_src.z, 0.2 + agent_src.r * 0.2 + density * 0.01,
+                     clamp(density, 0., 5.) * 0.08 + agent_src.r * 0.9));
+  }
+
   // vec3 c = vec3(rainbow);
   // rainbow = hsv2rgb(vUv.x * 255., 255.0, 50.);
 
@@ -73,8 +81,10 @@ void main() {
     // rainbow +=
     // vec3(0.0, 0.1, 0.) * clamp(1. - (cohesion - density) * 5., 0.1, 1.);
   }
-  if (vUv.x < 0.2 && vUv.y < 0.6) {
-    rainbow = hsv2rgb(vec3(src.a, 0.1, 0.4 + agent_src.r));
+  if (vUv.x < 0.3 && vUv.y < 0.6) {
+    // rainbow = hsv2rgb(vec3(src.a, 0.1, 0.4 + agent_src.r));
+    // rainbow = hsv2rgb(vec3(agent_src.z / 1.0, 0.9, 0.4 + agent_src.r));
+    // rainbow = agent_src.xzz * 10.0;
   }
   gl_FragColor = vec4(rainbow, 1.0);
 
