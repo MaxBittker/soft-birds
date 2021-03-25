@@ -5,6 +5,8 @@ uniform sampler2D agent_data;
 
 uniform float separation;
 uniform float cohesion;
+uniform float port;
+
 varying vec2 vUv;
 
 // clang-format off
@@ -28,17 +30,21 @@ float debug = 0.8;
 
 void main() {
   vec2 pos = vUv / 1.;
-  // vec4 protag = texture2D(data, vec2(1. / 50.));
+  vec4 protag = texture2D(agent_data, vec2(1. / 20.));
   // pos += (protag.xy);
 
-  if (pos.x < 0.35 && pos.y > 1.0 - 0.35) {
-    // pos.x -= (protag.x);
-    // pos.y += protag.y / 2.;
-    // pos.y += protag.y / 2.;
-    // pos /= 4.;
-    // pos.x += protag.x / 2.0;
+  vec2 port = vec2(port);
+  float scale = 5.0;
+
+ if (pos.x < port.x && pos.y < port.y) {
+        // if (length(pos - protag.xy) < 0.1) {
+        pos = protag.xy + pos / scale;
+    pos -= port / (scale * 2.0);
+    // pos - vec2(0.25, -0.25);
   }
   pos = mod(pos, 1.0);
+
+
   vec4 src = texture2D(data, pos);
 
   float density = src.g;
@@ -68,7 +74,7 @@ void main() {
 
     rainbow =
         hsv2rgb(vec3(agent_src.z, 0.2 + agent_src.r * 0.2 + density * 0.01,
-                     clamp(density, 0., 5.) * 0.08 + agent_src.r * 0.9));
+                     clamp(density, 1., 5.) * 0.08 + agent_src.r * 0.9));
   }
 
   // vec3 c = vec3(rainbow);
@@ -87,6 +93,10 @@ void main() {
     // rainbow = agent_src.xzz * 10.0;
   }
   gl_FragColor = vec4(rainbow, 1.0);
+
+  if (length(pos - protag.xy) < 0.005 &&length(pos - protag.xy)  >0.003 ) {
+        gl_FragColor.rgb += .6;
+  }
 
   // vec2 square = abs(vUv - vec2(0.5)); // Similar to ( Y greater than 0.1 )
   // vec3 color = vec3(1.0) * step(0.4, max(square.x, square.y));

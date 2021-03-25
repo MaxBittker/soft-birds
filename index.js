@@ -9,7 +9,7 @@ import {
   FloatType,
   PlaneBufferGeometry,
   ShaderMaterial,
-  Vector2
+  Vector2,
 } from "three";
 import PingpongRenderTarget from "./src/PingpongRenderTarget";
 import RenderTarget from "./src/RenderTarget";
@@ -23,7 +23,7 @@ let w = window.innerWidth / r;
 let h = window.innerHeight / r;
 
 const renderer = new WebGLRenderer({
-  alpha: true
+  alpha: true,
 });
 document.body.appendChild(renderer.domElement);
 renderer.setSize(w, h);
@@ -34,7 +34,7 @@ camera.position.z = 1;
 // 1 init buffers
 //////////////////////////////////////
 
-let size = 512 / 4; // particles amount = ( size ^ 2 )
+let size = 128; // particles amount = ( size ^ 2 )
 
 let count = size * size;
 console.log(count);
@@ -73,10 +73,10 @@ for (let i = 0; i < count; i++) {
 let diffuse_decay = new ShaderMaterial({
   uniforms: {
     points: { value: null },
-    decay: { value: 0.98 }
+    decay: { value: 0.98 },
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
-  fragmentShader: require("./src/glsl/diffuse_decay_fs.glsl")
+  fragmentShader: require("./src/glsl/diffuse_decay_fs.glsl"),
 });
 let trails = new PingpongRenderTarget(w, h, diffuse_decay);
 
@@ -93,17 +93,18 @@ let update_agents = new ShaderMaterial({
     ss: { value: 0.25 },
 
     sub: { value: 0.8 },
-    low: { value: 0.8 },
-    med: { value: 0.8 },
-    high: { value: 0.8 },
+    low: { value: 0.85 },
+    med: { value: 0.9 },
+    high: { value: 0.95 },
 
-    separation: { value: 9.75 },
-    cohesion: { value: 2.19 },
+    separation: { value: 6.75 },
+    cohesion: { value: 0.59 },
     alignment: { value: 9.72 },
-    turbulence: { value: 0.54 }
+    turbulence: { value: 0.54 },
+    port: { value: 0.25 },
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
-  fragmentShader: require("./src/glsl/update_agents_fs.glsl")
+  fragmentShader: require("./src/glsl/update_agents_fs.glsl"),
 });
 let agents = new PingpongRenderTarget(size, size, update_agents, ptexdata);
 
@@ -113,7 +114,7 @@ let agents = new PingpongRenderTarget(size, size, update_agents, ptexdata);
 //renders the updated agents as red dots
 let render_agents = new ShaderMaterial({
   vertexShader: require("./src/glsl/render_agents_vs.glsl"),
-  fragmentShader: require("./src/glsl/render_agents_fs.glsl")
+  fragmentShader: require("./src/glsl/render_agents_fs.glsl"),
 });
 let render = new RenderTarget(w, h, render_agents, pos, uvs);
 
@@ -124,19 +125,20 @@ let render = new RenderTarget(w, h, render_agents, pos, uvs);
 let postprocess = new ShaderMaterial({
   uniforms: {
     data: {
-      value: null
+      value: null,
     },
     agent_render: {
-      value: null
+      value: null,
     },
     agent_data: {
-      value: null
+      value: null,
     },
-    separation: { value: 15.0 },
-    cohesion: { value: 4.0 }
+    separation: { value: 4.0 },
+    cohesion: { value: 1.0 },
+    port: { value: 0.25 },
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
-  fragmentShader: require("./src/glsl/postprocess_fs.glsl")
+  fragmentShader: require("./src/glsl/postprocess_fs.glsl"),
 });
 let postprocess_mesh = new Mesh(new PlaneBufferGeometry(), postprocess);
 postprocess_mesh.scale.set(w, h, 1);
@@ -152,7 +154,7 @@ let controls = new Controls(renderer, agents);
 
 let materials = [diffuse_decay, update_agents, render_agents];
 let resolution = new Vector2(w, h);
-materials.forEach(mat => {
+materials.forEach((mat) => {
   mat.uniforms.resolution.value = resolution;
 });
 
@@ -162,47 +164,47 @@ let time = 0;
 // settings
 //////////////////////////////////////////////////
 
-import { registerMidiUpdateListener, getMidiValue } from "./src/Midi";
-import { audioAnalyzer } from "./src/Audio";
+// import { registerMidiUpdateListener, getMidiValue } from "./src/Midi";
+// import { audioAnalyzer } from "./src/Audio";
 let audioBuffer = null;
-let audioVisualization = audio => {
+let audioVisualization = (audio) => {
   console.log(audio);
 
   function raf() {
     requestAnimationFrame(raf);
     time = (Date.now() - start) * 0.001;
 
-    if (!audioBuffer) {
-      audioBuffer = new Uint8Array(audio.frequencyBinCount);
-    }
-    audio.getByteFrequencyData(audioBuffer);
-    let bands = new Array(4);
-    var f = 0.0;
-    var a = 5,
-      b = 11,
-      c = 24,
-      d = 512,
-      i = 0;
-    for (; i < a; i++) f += audioBuffer[i];
-    f *= 0.2; // 1/(a-0)
-    f *= 0.003921569; // 1/255
-    bands[0] = f;
-    f = 0.0;
-    for (; i < b; i++) f += audioBuffer[i];
-    f *= 0.166666667; // 1/(b-a)
-    f *= 0.003921569; // 1/255
-    bands[1] = f;
-    f = 0.0;
-    for (; i < c; i++) f += audioBuffer[i];
-    f *= 0.076923077; // 1/(c-b)
-    f *= 0.003921569; // 1/255
-    bands[2] = f;
-    f = 0.0;
-    for (; i < d; i++) f += audioBuffer[i];
-    f *= 0.00204918; // 1/(d-c)
-    f *= 0.003921569; // 1/255
-    bands[3] = f;
-    bands.forEach((v, i) => levels[i].setValue(0.1 + v * 2));
+    // if (!audioBuffer) {
+    //   audioBuffer = new Uint8Array(audio.frequencyBinCount);
+    // }
+    // audio.getByteFrequencyData(audioBuffer);
+    // let bands = new Array(4);
+    // var f = 0.0;
+    // var a = 5,
+    //   b = 11,
+    //   c = 24,
+    //   d = 512,
+    //   i = 0;
+    // for (; i < a; i++) f += audioBuffer[i];
+    // f *= 0.2; // 1/(a-0)
+    // f *= 0.003921569; // 1/255
+    // bands[0] = f;
+    // f = 0.0;
+    // for (; i < b; i++) f += audioBuffer[i];
+    // f *= 0.166666667; // 1/(b-a)
+    // f *= 0.003921569; // 1/255
+    // bands[1] = f;
+    // f = 0.0;
+    // for (; i < c; i++) f += audioBuffer[i];
+    // f *= 0.076923077; // 1/(c-b)
+    // f *= 0.003921569; // 1/255
+    // bands[2] = f;
+    // f = 0.0;
+    // for (; i < d; i++) f += audioBuffer[i];
+    // f *= 0.00204918; // 1/(d-c)
+    // f *= 0.003921569; // 1/255
+    // bands[3] = f;
+    // bands.forEach((v, i) => levels[i].setValue(0.1 + v * 2));
     // let v = bands[3] * 2;
     // v = v * getMidiValue(5) + (getMidiValue(6) - 0.5);
 
@@ -237,57 +239,60 @@ let audioVisualization = audio => {
 
 let gui = new dat.GUI();
 
-let ss = gui.add(update_agents.uniforms.ss, "value", -4, 9, 0.01).name("speed");
+let ss = gui.add(update_agents.uniforms.ss, "value", -2, 6, 0.01).name("speed");
 
 console.log(update_agents.uniforms);
 let levels = [
-  gui.add(update_agents.uniforms.sub, "value", -1, 5, 0.01).name("sub"),
-  gui.add(update_agents.uniforms.low, "value", -1, 5, 0.01).name("low"),
-  gui.add(update_agents.uniforms.med, "value", -1, 5, 0.01).name("med"),
-  gui.add(update_agents.uniforms.high, "value", -1, 5, 0.01).name("high")
+  // gui.add(update_agents.uniforms.sub, "value", -1, 5, 0.01).name("sub"),
+  // gui.add(update_agents.uniforms.low, "value", -1, 5, 0.01).name("low"),
+  // gui.add(update_agents.uniforms.med, "value", -1, 5, 0.01).name("med"),
+  // gui.add(update_agents.uniforms.high, "value", -1, 5, 0.01).name("high"),
 ];
 
 let values = [
   gui
-    .add(diffuse_decay.uniforms.decay, "value", 0.8, 0.999, 0.01)
+    .add(diffuse_decay.uniforms.decay, "value", 0.97, 0.993, 0.001)
     .name("decay"),
-  gui.add(update_agents.uniforms.sa, "value", 1, 10, 0.01).name("sensor angle"),
+  gui.add(update_agents.uniforms.so, "value", 1, 8, 0.01).name("sensor offset"),
+
   gui
-    .add(update_agents.uniforms.ra, "value", 1, 10, 0.01)
+    .add(update_agents.uniforms.sa, "value", 0.5, 2, 0.01)
+    .name("sensor angle"),
+  gui
+    .add(update_agents.uniforms.ra, "value", 0.5, 2, 0.01)
     .name("rotation angle"),
-  gui.add(update_agents.uniforms.so, "value", 1, 5, 0.01).name("sensor offset"),
   gui
-    .add(update_agents.uniforms.separation, "value", 0, 10, 0.01)
+    .add(update_agents.uniforms.separation, "value", 0, 15, 0.01)
     .name("separation"),
   gui
-    .add(update_agents.uniforms.cohesion, "value", 0, 10, 0.01)
+    .add(update_agents.uniforms.cohesion, "value", 0, 4, 0.01)
     .name("cohesion"),
   gui
-    .add(update_agents.uniforms.alignment, "value", 0, 10, 0.01)
+    .add(update_agents.uniforms.alignment, "value", 0, 15, 0.01)
     .name("alignment"),
   gui
     .add(update_agents.uniforms.turbulence, "value", 0, 10, 0.01)
-    .name("turbulence")
-
+    .name("turbulence"),
+  gui.add(postprocess.uniforms.port, "value", 0, 1, 0.001).name("magnifier"),
   // gui.add(controls, "count", 1, size * size, 1)
 ];
-values.forEach(v => v.setValue(v.object.value));
+values.forEach((v) => v.setValue(v.object.value));
 
-audioAnalyzer({
-  done: audioVisualization
-});
-
-registerMidiUpdateListener(
-  (n, v) => {
-    if (!values[n]) {
-      return;
-    }
-    let value = v * values[n].__max;
-    //   console.log(values[n]);
-    values[n].setValue(value);
-  },
-  bv => {
-    console.log(bv);
-    controls.addParticles({ clientX: 500, clientY: 500 });
-  }
-);
+// audioAnalyzer({
+//   done: audioVisualization,
+// });
+audioVisualization();
+// registerMidiUpdateListener(
+//   (n, v) => {
+//     if (!values[n]) {
+//       return;
+//     }
+//     let value = v * values[n].__max;
+//     //   console.log(values[n]);
+//     values[n].setValue(value);
+//   },
+//   (bv) => {
+//     console.log(bv);
+//     controls.addParticles({ clientX: 500, clientY: 500 });
+//   }
+// );
