@@ -53,25 +53,30 @@ float getDesireableness(vec2 location, float resultingAngle) {
   // ) desireableness -= step(0.4, max(square.x, square.y)) * length(location -
   // vec2(0.5)) * 5.;
 
-  desireableness += snoise3(vec3(location, time * .1));
+  desireableness += snoise3(vec3(location*2., time * .1))* turbulence;
   // /
   // * turbulence;
   // desireableness += location.x * 400.;
   // }
   // Separation: steer to avoid crowding local flockmates
   if (density > separation) {
-    desireableness -= density * 15.;
+    // desireableness -= (density) * 10.;
+    desireableness -= (density - separation)*(density - separation) * 80.;
+
   }
   // Cohesion: steer to move toward the average position of local flockmates
   if (density < cohesion) {
-    desireableness += density * 10.;
+    desireableness += (cohesion - density) * (cohesion - density) * 12.;
   }
+
+
+
 
   // Alignment: steer towards the average heading of local flockmates
   float angleDistance =
       atan(sin(angle - resultingAngle), cos(angle - resultingAngle)) / PI2;
 
-  desireableness -= (1.0 - abs(angleDistance)) * alignment;
+  desireableness -= (1.0 - abs(angleDistance)) * alignment*4.;
 
   return desireableness;
 }
@@ -80,7 +85,7 @@ float getTrailValue(vec2 uv) { return texture2D(data, fract(uv)).g; }
 
 varying vec2 vUv;
 void main() {
-  float species = floor((vUv.x + 0.01) * 10.0) / 10.0;
+  float species = floor((vUv.x + 0.1) * 10.0) / 10.0;
 
   // converts degree to radians (should be done on the CPU)
   float SA = sa * RAD;
@@ -121,6 +126,7 @@ void main() {
 
   if (F > FL && F > FR) {
     // do nothing
+    SS*=1.2;
   } else if (F < FL && F < FR) {
 
     if (random(val.xy) > .5) {
@@ -143,12 +149,12 @@ void main() {
 
   vec2 speed = SS;
 
-  speed += species / 400.;
+  speed += species / 500.;
   int bin = int(species);
 
   // speed = speed * getTrailValue(val.xy);
   if (F < B) {
-    speed *= turbulence;
+    speed *= ((F+50.0)/(B+50.0));
     if (bin == 0) {
       speed *= sub;
     } else if (bin == 1) {
@@ -160,6 +166,7 @@ void main() {
       speed *= high;
     }
   }
+  // speed = max(vec2(0.),speed);
   vec2 offset = vec2(cos(angle), sin(angle)) * speed;
 
   // if (getTrailValue(val.xy) < 0.3) {
@@ -169,10 +176,10 @@ void main() {
 
   //   condition from the paper
   //   : move only if the destination is free
-  //   if (getDataValue(val.xy) == 1.) {
-  //     val.xy = src.xy;
-  //     angle = random(val.xy + time) * PI2;
-  //   }
+    // if (getTrailValue(val.xy) > 2.) {
+    //   val.xy = src.xy;
+    //   angle = random(val.xy + time) * PI2;
+    // }
 
   // warps the coordinates so they remains in the [0-1] interval
   val.xy = fract(val.xy);

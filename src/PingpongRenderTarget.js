@@ -8,7 +8,7 @@ import {
   PlaneBufferGeometry,
   Mesh,
   DataTexture,
-  Vector2
+  Vector2,
 } from "three";
 
 export default class PingpongRenderTarget {
@@ -20,7 +20,7 @@ export default class PingpongRenderTarget {
       minFilter: NearestFilter,
       magFilter: NearestFilter,
       format: RGBAFormat,
-      type: FloatType
+      type: FloatType,
     };
 
     let rt_a = new WebGLRenderTarget(this.width, this.height, options);
@@ -44,7 +44,7 @@ export default class PingpongRenderTarget {
     this.material.uniforms["input_texture"] = { value: this.texture };
     this.material.uniforms["resolution"] = { value: new Vector2(w, h) };
     this.material.uniforms["time"] = { value: 0 };
-    // this.material.transparent = true;
+    this.material.transparent = false;
 
     this.mesh = new Mesh(new PlaneBufferGeometry(), this.material);
     this.mesh.scale.set(w, h, 1);
