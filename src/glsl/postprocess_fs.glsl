@@ -94,7 +94,7 @@ void main() {
   }
   gl_FragColor = vec4(rainbow, 1.0);
 
-  if (length(pos - protag.xy) < 0.005 &&length(pos - protag.xy)  >0.003 ) {
+  if (port.x > 0.1 && length(pos - protag.xy) < 0.005 &&length(pos - protag.xy)  >0.0035 ) {
         gl_FragColor.rgb += .6;
   }
 

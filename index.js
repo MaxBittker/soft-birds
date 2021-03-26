@@ -18,7 +18,7 @@ import Controls from "./src/Controls";
 
 // 0 configure scene
 //////////////////////////////////////
-let r = 1;
+let r = 2;
 let w = window.innerWidth / r;
 let h = window.innerHeight / r;
 
@@ -73,7 +73,7 @@ for (let i = 0; i < count; i++) {
 let diffuse_decay = new ShaderMaterial({
   uniforms: {
     points: { value: null },
-    decay: { value: 0.98 },
+    decay: { value: 0.985 },
   },
   vertexShader: require("./src/glsl/quad_vs.glsl"),
   fragmentShader: require("./src/glsl/diffuse_decay_fs.glsl"),
